@@ -2,5 +2,6 @@
     "terminal.integrated.env.osx": {
         "PATH": "/Users/joseroldan/.platformio/penv/bin:/Users/joseroldan/.platformio/penv:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/joseroldan/Desktop/Apps/apache-maven-3.6.1/bin",
         "PLATFORMIO_CALLER": "vscode"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }
