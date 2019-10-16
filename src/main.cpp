@@ -37,9 +37,6 @@ void loop() {
 
   Serial.println(timeClient.getFormattedTime());
 
-  Serial.println(distanceSensor.measureDistanceCm());
-
   delay(1000);
 
-  
 }
