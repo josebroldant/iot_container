@@ -13,12 +13,12 @@ UltraSonicDistanceSensor distanceSensor(13, 12);  // Initialize sensor that uses
 WiFiUDP ntpUDP;
 
 const char *ssid     = "jose";
-const char *password = "<1234567890>";
+const char *password = "noesfake";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   WiFi.begin(ssid, password);
 
@@ -36,6 +36,7 @@ void loop() {
   timeClient.update();
 
   Serial.println(timeClient.getFormattedTime());
+  Serial.println("Esta es la hora gmt-0");
 
   delay(1000);
 
