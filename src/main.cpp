@@ -41,7 +41,7 @@ void setup(){
   delay(1000);
 }
 
-int estado=0;
+char estado;
 
 void loop() {
   //Hora europea
@@ -73,20 +73,25 @@ void loop() {
   //Condiconal del estado
   double llenado = distanceSensor.measureDistanceCm();
   if(llenado < 6.0){
-    estado=1;
-    Serial.println("FULL");
+    estado = 'F';
+    Serial.println(estado);
     //accion del actuador
     servo.write(90);
     delay(1000);
     servo.write(0);
     delay(1000);
   }else{
-    estado=0;
-    Serial.println("NORMAL");
+    estado = 'N';
+    Serial.println(estado);
+    servo.write(0);
+    delay(1000);
+    servo.write(90);
+    delay(1000);
   }
   //Conversión a formato json de los datos
 
   //Conexion a mongoDB
 
   //Post de las variables
+  
 }
