@@ -41,19 +41,15 @@ void setup(){
   delay(1000);
 }
 
-void loop() {
+int estado=0;
 
+void loop() {
   //Hora europea
   timeClient.update();
   Serial.println(timeClient.getFormattedTime());
   Serial.println("Esta es la hora gmt-0");
   //medicion de distancia
   Serial.println(distanceSensor.measureDistanceCm());
-  //accion del actuador
-  servo.write(90);
-  delay(1000);
-  servo.write(0);
-  delay(1000);
   //medicion de voltaje, corriente y potencia
   float shuntvoltage = 0;
   float busvoltage = 0;
@@ -73,7 +69,24 @@ void loop() {
   Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
   Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
   Serial.println("");
+
+  //Condiconal del estado
+  double llenado = distanceSensor.measureDistanceCm();
+  if(llenado < 6.0){
+    estado=1;
+    Serial.println("FULL");
+    //accion del actuador
+    servo.write(90);
+    delay(1000);
+    servo.write(0);
+    delay(1000);
+  }else{
+    estado=0;
+    Serial.println("NORMAL");
+  }
   //Conversión a formato json de los datos
+
+  //Conexion a mongoDB
 
   //Post de las variables
 }
