@@ -8,6 +8,7 @@
 #include <Wire.h>
 #include <HCSR04.h>
 #include <Servo.h>
+#include <Adafruit_INA219.h>
 
 WiFiUDP ntpUDP;
 
@@ -20,9 +21,12 @@ UltraSonicDistanceSensor distanceSensor(13, 12);  // Initialize sensor that uses
 
 Servo servo;
 
-void setup(){
-  Serial.begin(9600);
+Adafruit_INA219 ina219;
 
+void setup(){
+  uint32_t currentFrequency;
+  Serial.begin(9600);
+  ina219.begin();
   WiFi.begin(ssid, password);
 
   while ( WiFi.status() != WL_CONNECTED ) {
@@ -39,14 +43,37 @@ void setup(){
 
 void loop() {
 
-  //Aqui en el loop hacer el post constante de las variables.
+  //Hora europea
   timeClient.update();
-
   Serial.println(timeClient.getFormattedTime());
   Serial.println("Esta es la hora gmt-0");
+  //medicion de distancia
   Serial.println(distanceSensor.measureDistanceCm());
+  //accion del actuador
   servo.write(90);
   delay(1000);
   servo.write(0);
   delay(1000);
+  //medicion de voltaje, corriente y potencia
+  float shuntvoltage = 0;
+  float busvoltage = 0;
+  float current_mA = 0;
+  float loadvoltage = 0;
+  float power_mW = 0;
+
+  shuntvoltage = ina219.getShuntVoltage_mV();
+  busvoltage = ina219.getBusVoltage_V();
+  current_mA = ina219.getCurrent_mA();
+  power_mW = ina219.getPower_mW();
+  loadvoltage = busvoltage + (shuntvoltage / 1000);
+  
+  Serial.print("Bus Voltage:   "); Serial.print(busvoltage); Serial.println(" V");
+  Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
+  Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
+  Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
+  Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
+  Serial.println("");
+  //Conversión a formato json de los datos
+
+  //Post de las variables
 }
