@@ -25,8 +25,8 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
-char serverAddress[] = "mongodb+srv://ssmcluster-aobqi.mongodb.net/test";//server address for terminal
-int port = 2000;
+char serverAddress[] = "localhost";//server address for terminal
+int port = 3000;
 
 WiFiClient wifi;
 WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
