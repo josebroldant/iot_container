@@ -12,8 +12,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "jose";
-const char *password = "noesfake";
+const char *ssid     = "familiaroldan";
+const char *password = "51736393";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -49,6 +49,7 @@ void loop() {
   Serial.println(timeClient.getFormattedTime());
   Serial.println("Esta es la hora gmt-0");
   //medicion de distancia
+  Serial.print("Distancia: ");
   Serial.println(distanceSensor.measureDistanceCm());
   //medicion de voltaje, corriente y potencia
   float shuntvoltage = 0;
@@ -83,9 +84,9 @@ void loop() {
   }else{
     estado = 'N';
     Serial.println(estado);
-    servo.write(0);
+    servo.write(180);
     delay(1000);
-    servo.write(90);
+    servo.write(0);
     delay(1000);
   }
   //Conversión a formato json de los datos
