@@ -9,6 +9,7 @@
 #include <HCSR04.h>
 #include <Servo.h>
 #include <Adafruit_INA219.h>
+#include <ArduinoJson.h>
 
 WiFiUDP ntpUDP;
 
@@ -90,6 +91,29 @@ void loop() {
     delay(1000);
   }
   //Conversión a formato json de los datos
+  StaticJsonBuffer<200> jsonBuffer;
+
+  char datos[] =
+      "{\"voltage\":loadvoltage, \"current\":current_mA, \"power\":power_mW, \"state\":estado, \"level\":llenado}";
+
+  JsonObject &root = jsonBuffer.parseObject(datos);
+
+  if (!root.success()) {
+    Serial.println("parseObject() failed");
+    return;
+  }
+
+  const float voltage = root["voltage"];
+  const float current = root["current"];
+  const float power = root["power"];
+  const char state = root["state"];
+  const double level = root["level"];
+
+  Serial.println(voltage);
+  Serial.println(current);
+  Serial.println(power);
+  Serial.println(state);
+  Serial.println(level);
 
   //Conexion a mongoDB
 
