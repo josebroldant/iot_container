@@ -25,7 +25,7 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
-char serverAddress[] = "mongodb+srv://A7XENON:#Exeron97@ssmcluster-aobqi.mongodb.net/test?retryWrites=true&w=majority";  // server address
+char serverAddress[] = "mongodb+srv://ssmcluster-aobqi.mongodb.net/test";//server address for terminal
 int port = 2000;
 
 WiFiClient wifi;
