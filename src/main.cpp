@@ -10,6 +10,7 @@
 #include <Servo.h>
 #include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
+#include <ArduinoHttpClient.h>
 
 WiFiUDP ntpUDP;
 
@@ -23,6 +24,12 @@ UltraSonicDistanceSensor distanceSensor(13, 12);  // Initialize sensor that uses
 Servo servo;
 
 Adafruit_INA219 ina219;
+
+char serverAddress[] = "mongodb+srv://A7XENON:#Exeron97@ssmcluster-aobqi.mongodb.net/test?retryWrites=true&w=majority";  // server address
+int port = 2000;
+
+WiFiClient wifi;
+WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
 void setup(){
   uint32_t currentFrequency;
@@ -116,6 +123,10 @@ void loop() {
   Serial.println(level);
 
   //Conexion a mongoDB
+  client.begin();
+  while (client.connected()){
+    client.print("succesfully conected to mongodb");
+  }
 
   //Post de las variables
   
