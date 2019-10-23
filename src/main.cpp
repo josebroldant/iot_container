@@ -10,12 +10,12 @@
 #include <Servo.h>
 #include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
-#include <ArduinoHttpClient.h>
+//#include <ArduinoHttpClient.h>
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "familiaroldan";
-const char *password = "51736393";
+const char *ssid     = "jose";
+const char *password = "noesfake";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -25,16 +25,18 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
-char serverAddress[] = "localhost";//server address for terminal
-int port = 3000;
+const uint16_t port = 3000;
+const char *host = "192.168.43.128"; //ip del router
 
-WiFiClient wifi;
-WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
+//WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
 void setup(){
   uint32_t currentFrequency;
   Serial.begin(9600);
   ina219.begin();
+  pinMode(2, OUTPUT);
+  servo.attach(2);
+  servo.write(0);
   WiFi.begin(ssid, password);
 
   while ( WiFi.status() != WL_CONNECTED ) {
@@ -42,23 +44,18 @@ void setup(){
     Serial.print ( "." );
   }
 
-  timeClient.begin();
-  pinMode(2, OUTPUT);
-  servo.attach(2);
-  servo.write(0);
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
   delay(1000);
 }
 
-char estado;
+String estado;
+WiFiClient client;
 
 void loop() {
-  //Hora europea
-  timeClient.update();
-  Serial.println(timeClient.getFormattedTime());
-  Serial.println("Esta es la hora gmt-0");
   //medicion de distancia
   Serial.print("Distancia: ");
-  Serial.println(distanceSensor.measureDistanceCm());
+  Serial.print(distanceSensor.measureDistanceCm()); Serial.println(" cm");
   //medicion de voltaje, corriente y potencia
   float shuntvoltage = 0;
   float busvoltage = 0;
@@ -98,35 +95,37 @@ void loop() {
     delay(1000);
   }
   //Conversión a formato json de los datos
-  StaticJsonBuffer<200> jsonBuffer;
+  DynamicJsonBuffer jsonBuffer(200);
+  JsonObject &root = jsonBuffer.createObject();
+  root["voltage"] = loadvoltage;
+  root["current"]  = current_mA;
+  root["power"]  = power_mW;
+  root["state"]  = estado;
+  root["level"]  = llenado;
 
-  char datos[] =
-      "{\"voltage\":loadvoltage, \"current\":current_mA, \"power\":power_mW, \"state\":estado, \"level\":llenado}";
+  root.printTo(Serial);
+  Serial.print("\n");
+  root.printTo(client);
+  client.print("\n");
 
-  JsonObject &root = jsonBuffer.parseObject(datos);
+  //VERIFICACION DE LA CONEXION
 
-  if (!root.success()) {
-    Serial.println("parseObject() failed");
-    return;
+  if (!client.connect(host, port))
+  {
+    Serial.println("conecction failed");
+    delay(1000);
   }
-
-  const float voltage = root["voltage"];
-  const float current = root["current"];
-  const float power = root["power"];
-  const char state = root["state"];
-  const double level = root["level"];
-
-  Serial.println(voltage);
-  Serial.println(current);
-  Serial.println(power);
-  Serial.println(state);
-  Serial.println(level);
 
   //Conexion a mongoDB
-  client.begin();
-  while (client.connected()){
-    client.print("succesfully conected to mongodb");
-  }
+  if(client.available()>0){
+      Serial.println("Disponible");
+      String line = client.readStringUntil('\n');
+      Serial.println(line);
+      JsonObject& root = jsonBuffer.parseObject(line);
+      if(!root.success()){
+        Serial.println("parseObject() failed");
+      }
+    }
 
   //Post de las variables
   
