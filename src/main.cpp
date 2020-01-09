@@ -14,8 +14,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "jose";
-const char *password = "noesfake";
+const char *ssid     = "familiaroldan";
+const char *password = "51736393";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
