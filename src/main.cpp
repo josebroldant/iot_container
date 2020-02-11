@@ -14,8 +14,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "familiaroldan";
-const char *password = "51736393";
+const char *ssid     = "JOSE";
+const char *password = "123456789";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -25,8 +25,8 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
-const uint16_t port = 3000;
-const char *host = "192.168.43.128"; //ip del router
+const uint16_t port = 8081;
+const char *host = "172.25.19.134"; //ip del router
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -105,46 +105,48 @@ void loop() {
 
   root.printTo(Serial);
   Serial.print("\n");
-  root.printTo(client);
-  client.print("\n");
 
   //VERIFICACION DE LA CONEXION
 
-  //Conexion al servidor
+  client.connect(host, port);
+  client.print("coneccted");
 
-  String url = "localhost:3000/index";
+  // We now create a URI for the request
+ String url = "/";
 
-  while(client.available()){
-      Serial.println("Disponible");
-      String line = client.readStringUntil('\n');
-      Serial.println(line);
-      JsonObject& root = jsonBuffer.parseObject(line);
-      if(!root.success()){
-        Serial.println("parseObject() failed");
-      }
-      Serial.print("Requesting POST: ");
-      // Send request to the server:
-      client.println("POST / HTTP/1.1");
-      client.println("Host: server_name");
-      client.println("Accept: */*");
-      client.println("Content-Type: application/x-www-form-urlencoded");
-      client.print("Content-Length: ");
-      client.println(line);
-      client.println();
-      // This will send the request to the server
-      //this is a get method working
-      client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-           "Connection: close\r\n\r\n");
-      unsigned long timeout = millis();
-      while (client.available() == 0) {
-        if (millis() - timeout > 5000) {
-          Serial.println(">>> Client Timeout !");
-          client.stop();
-        return;
-        }
-      }
+ Serial.print("Requesting URL: ");
+ Serial.println(url);
 
-  //Post de las variables
-  
-  }
+   Serial.print("Requesting POST: ");
+   // Send request to the server:
+   client.println("POST / HTTP/1.1");
+   client.println("Host: server_name");
+   client.println("Accept: */*");
+   client.println("Content-Type: application/x-www-form-urlencoded");
+   client.print("Content-Length: ");
+   //client.println(data.length());
+   client.println();
+   root.printTo(client);
+   client.print("\n");
+ // This will send the request to the server
+ /*this is a get method working
+  * client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+           "Connection: close\r\n\r\n");*/
+ unsigned long timeout = millis();
+ while (client.available() == 0) {
+ if (millis() - timeout > 5000) {
+  Serial.println(">>> Client Timeout !");
+  client.stop();
+  return;
+ }
+}
+
+ // Read all the lines of the reply from server and print them to Serial
+ while(client.available()){
+  String line = client.readStringUntil('\r');
+  Serial.print(line);
+ }
+
+ Serial.println();
+ Serial.println("closing connection");
 }
