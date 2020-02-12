@@ -10,7 +10,7 @@
 #include <Servo.h>
 #include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
-//#include <ArduinoHttpClient.h>
+#include <ArduinoHttpClient.h>
 
 WiFiUDP ntpUDP;
 
@@ -26,7 +26,7 @@ Servo servo;
 Adafruit_INA219 ina219;
 
 const uint16_t port = 8081;
-const char *host = "172.25.19.134"; //ip del router
+const char *host = "172.25.10.118"; //ip del router
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -51,6 +51,7 @@ void setup(){
 
 String estado;
 WiFiClient client;
+HttpClient http = HttpClient(client, host, port);
 
 void loop() {
   //medicion de distancia
@@ -106,13 +107,15 @@ void loop() {
   root.printTo(Serial);
   Serial.print("\n");
 
+  String json_dav = "{\"ID\":10,\"UserName\":\"user1\",\"Password\":\"123456\"}";
+
   //VERIFICACION DE LA CONEXION
 
   client.connect(host, port);
   client.print("coneccted");
 
   // We now create a URI for the request
- String url = "/";
+ String url = "http://localhost:8081";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
@@ -120,7 +123,7 @@ void loop() {
    Serial.print("Requesting POST: ");
    // Send request to the server:
    client.println("POST / HTTP/1.1");
-   client.println("Host: server_name");
+   client.println("Host: localhost");
    client.println("Accept: */*");
    client.println("Content-Type: application/x-www-form-urlencoded");
    client.print("Content-Length: ");
@@ -128,24 +131,34 @@ void loop() {
    client.println();
    root.printTo(client);
    client.print("\n");
- // This will send the request to the server
- /*this is a get method working
-  * client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-           "Connection: close\r\n\r\n");*/
+   //convert to char
+   char json_conv[100];
+   root.printTo((char*)json_conv, root.measureLength() + 1);
+   //convert to string
+   String json_str;
+   root.printTo(json_str);
+
+ //this is a get method working
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+           "Connection: close\r\n\r\n");
+  http.beginRequest();
+  http.post(url, "application/x-www-form-urlencoded", json_str);//post data must be string
+  http.endRequest();
+
  unsigned long timeout = millis();
  while (client.available() == 0) {
- if (millis() - timeout > 5000) {
-  Serial.println(">>> Client Timeout !");
-  client.stop();
-  return;
- }
+  if (millis() - timeout > 5000) {
+    Serial.println(">>> Client Timeout !");
+    client.stop();
+    return;
+  }
 }
 
  // Read all the lines of the reply from server and print them to Serial
  while(client.available()){
   String line = client.readStringUntil('\r');
   Serial.print(line);
- }
+ } 
 
  Serial.println();
  Serial.println("closing connection");
