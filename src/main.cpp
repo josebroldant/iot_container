@@ -26,7 +26,7 @@ Servo servo;
 Adafruit_INA219 ina219;
 
 const uint16_t port = 8081;
-const char *host = "172.25.10.118"; //ip del router
+const char *host = "172.25.4.237"; //ip del router
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -107,7 +107,7 @@ void loop() {
   root.printTo(Serial);
   Serial.print("\n");
 
-  String json_dav = "{\"ID\":10,\"UserName\":\"user1\",\"Password\":\"123456\"}";
+  String json_test = "{\"voltage\":10,\"current\":\"1\",\"power\":\"6\",\"state\":\"f\",\"level\":\"6\"}";
 
   //VERIFICACION DE LA CONEXION
 
@@ -115,7 +115,7 @@ void loop() {
   client.print("coneccted");
 
   // We now create a URI for the request
- String url = "http://localhost:8081";
+ String url = "http://localhost:8081/test";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
