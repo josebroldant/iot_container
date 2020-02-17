@@ -14,8 +14,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "JOSE";
-const char *password = "123456789";
+const char *ssid     = "Jose";
+const char *password = "noesfake";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -26,7 +26,7 @@ Servo servo;
 Adafruit_INA219 ina219;
 
 const uint16_t port = 8081;
-const char *host = "172.25.4.237"; //ip del router
+const char *host = "192.168.43.25"; //ip del router
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -115,7 +115,7 @@ void loop() {
   client.print("coneccted");
 
   // We now create a URI for the request
- String url = "http://localhost:8081/test";
+ String url = "http://localhost:8081/";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
@@ -141,6 +141,8 @@ void loop() {
  //this is a get method working
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
            "Connection: close\r\n\r\n");
+  
+  //post request
   http.beginRequest();
   http.post(url, "application/x-www-form-urlencoded", json_str);//post data must be string
   http.endRequest();
