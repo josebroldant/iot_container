@@ -14,8 +14,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "Usergioarboleda";//Usergioarboleda Jose
-const char *password = "ceskqyw2012";//ceskqyw2012 noesfake
+const char *ssid     = "Jose";//Usergioarboleda Jose
+const char *password = "noesfake";//ceskqyw2012 noesfake
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -25,7 +25,7 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
-const char *host = "172.25.8.193"; //ip del router 192.168.43.25
+const char *host = "192.168.43.25"; //ip del router 192.168.43.25 / 172.25.8.193
 const uint16_t port = 8081;
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
