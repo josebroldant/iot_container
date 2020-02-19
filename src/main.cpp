@@ -14,8 +14,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "Jose";
-const char *password = "noesfake";
+const char *ssid     = "Usergioarboleda";//Usergioarboleda Jose
+const char *password = "ceskqyw2012";//ceskqyw2012 noesfake
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -25,8 +25,8 @@ Servo servo;
 
 Adafruit_INA219 ina219;
 
+const char *host = "172.25.8.193"; //ip del router 192.168.43.25
 const uint16_t port = 8081;
-const char *host = "192.168.43.25"; //ip del router
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -81,7 +81,7 @@ void loop() {
   double llenado = distanceSensor.measureDistanceCm();
   if(llenado < 6.0){
     estado = 'F';
-    Serial.println(estado);
+    //Serial.println(estado);
     //accion del actuador
     servo.write(90);
     delay(1000);
@@ -89,7 +89,7 @@ void loop() {
     delay(1000);
   }else{
     estado = 'N';
-    Serial.println(estado);
+    //Serial.println(estado);
     servo.write(180);
     delay(1000);
     servo.write(0);
@@ -112,10 +112,10 @@ void loop() {
   //VERIFICACION DE LA CONEXION
 
   client.connect(host, port);
-  client.print("coneccted");
+  client.print("Succesfully connected to host");
 
   // We now create a URI for the request
- String url = "http://localhost:8081/";
+ String url = "http://localhost:8081/test";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
@@ -126,22 +126,26 @@ void loop() {
    client.println("Host: localhost");
    client.println("Accept: */*");
    client.println("Content-Type: application/x-www-form-urlencoded");
-   client.print("Content-Length: ");
+   //client.print("Content-Length: ");
    //client.println(data.length());
    client.println();
    root.printTo(client);
    client.print("\n");
    //convert to char
    char json_conv[100];
-   root.printTo((char*)json_conv, root.measureLength() + 1);
+   root.printTo((char*)json_conv, root.measureLength());
    //convert to string
    String json_str;
    root.printTo(json_str);
+   Serial.println(json_str);
+   client.println(json_str);
 
- //this is a get method working
+  /*
+  //this is a get method working
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
            "Connection: close\r\n\r\n");
-  
+  */
+
   //post request
   http.beginRequest();
   http.post(url, "application/x-www-form-urlencoded", json_str);//post data must be string
@@ -151,6 +155,7 @@ void loop() {
  while (client.available() == 0) {
   if (millis() - timeout > 5000) {
     Serial.println(">>> Client Timeout !");
+    client.println(">>> Client Timeout !");
     client.stop();
     return;
   }
