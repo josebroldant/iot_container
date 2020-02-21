@@ -115,7 +115,7 @@ void loop() {
   client.print("Succesfully connected to host");
 
   // We now create a URI for the request
- String url = "http://localhost:8081/test";
+ String url = "http://localhost:8081/";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
@@ -125,7 +125,7 @@ void loop() {
    client.println("POST / HTTP/1.1");
    client.println("Host: localhost");
    client.println("Accept: */*");
-   client.println("Content-Type: application/x-www-form-urlencoded");
+   client.println("Content-Type: application/json");
    //client.print("Content-Length: ");
    //client.println(data.length());
    client.println();
@@ -148,7 +148,7 @@ void loop() {
 
   //post request
   http.beginRequest();
-  http.post(url, "application/x-www-form-urlencoded", json_str);//post data must be string
+  http.post(url, "application/json", json_str);//post data must be string
   http.endRequest();
 
  unsigned long timeout = millis();
