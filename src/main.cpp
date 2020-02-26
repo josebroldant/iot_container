@@ -81,19 +81,17 @@ void loop() {
   double llenado = distanceSensor.measureDistanceCm();
   if(llenado < 6.0){
     estado = 'F';
-    //Serial.println(estado);
-    //accion del actuador
-    servo.write(90);
-    delay(1000);
-    servo.write(0);
-    delay(1000);
+    for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    servo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
   }else{
     estado = 'N';
-    //Serial.println(estado);
-    servo.write(180);
-    delay(1000);
-    servo.write(0);
-    delay(1000);
+    for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+    servo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
   }
   //Conversión a formato json de los datos
   DynamicJsonBuffer jsonBuffer(200);
