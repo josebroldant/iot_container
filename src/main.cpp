@@ -81,17 +81,21 @@ void loop() {
   double llenado = distanceSensor.measureDistanceCm();
   if(llenado < 6.0){
     estado = 'F';
+    if(estado = 'F'){
     for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     servo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(15);
+    }                       // waits 15ms for the servo to reach the position
   }
   }else{
     estado = 'N';
+    if(estado = 'N'){
     for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
     servo.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
-  }
+      }
+    }
   }
   //Conversión a formato json de los datos
   DynamicJsonBuffer jsonBuffer(200);
@@ -114,6 +118,7 @@ void loop() {
 
   // We now create a URI for the request
  String url = "http://localhost:8081/";
+ String unlock_url = "http://localhost:8081/unlock";
 
  Serial.print("Requesting URL: ");
  Serial.println(url);
@@ -146,7 +151,8 @@ void loop() {
 
   //post request
   http.beginRequest();
-  http.post(url, "application/json", json_str);//post data must be string
+  http.post(url, "application/json", json_str);//DATA MUST BE STRING, SEND DATA TO SERVER
+  http.get(unlock_url);//OBTAIN UNLOCK DATA FROM SERVER
   http.endRequest();
 
  unsigned long timeout = millis();
