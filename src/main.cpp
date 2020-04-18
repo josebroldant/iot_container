@@ -11,6 +11,8 @@
 #include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
 #include <ArduinoHttpClient.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 WiFiUDP ntpUDP;
 
@@ -27,6 +29,8 @@ Adafruit_INA219 ina219;
 
 const char *host = "192.168.43.25"; //ip del router 192.168.43.25 / 172.25.8.193
 const uint16_t port = 8081;
+
+int status=0;
 
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
@@ -77,26 +81,7 @@ void loop() {
   Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
   Serial.println("");
 
-  //Condiconal del estado
   double llenado = distanceSensor.measureDistanceCm();
-  if(llenado < 6.0){
-    estado = 'F';
-    if(estado = 'F'){
-    for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    servo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);
-    }                       // waits 15ms for the servo to reach the position
-  }
-  }else{
-    estado = 'N';
-    if(estado = 'N'){
-    for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-    servo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
-      }
-    }
-  }
   //Conversión a formato json de los datos
   DynamicJsonBuffer jsonBuffer(200);
   JsonObject &root = jsonBuffer.createObject();
@@ -117,31 +102,27 @@ void loop() {
   client.print("Succesfully connected to host");
 
   // We now create a URI for the request
- String url = "http://localhost:8081/";
- String unlock_url = "http://localhost:8081/unlock";
+  String url = "http://localhost:8081/";
+  String unlock_url = "http://localhost:8081/unlock";
 
- Serial.print("Requesting URL: ");
- Serial.println(url);
-
-   Serial.print("Requesting POST: ");
-   // Send request to the server:
-   client.println("POST / HTTP/1.1");
-   client.println("Host: localhost");
-   client.println("Accept: */*");
-   client.println("Content-Type: application/json");
-   //client.print("Content-Length: ");
-   //client.println(data.length());
-   client.println();
-   root.printTo(client);
-   client.print("\n");
-   //convert to char
-   char json_conv[100];
-   root.printTo((char*)json_conv, root.measureLength());
-   //convert to string
-   String json_str;
-   root.printTo(json_str);
-   Serial.println(json_str);
-   client.println(json_str);
+  // Send request to the server:
+  client.println("POST / HTTP/1.1");
+  client.println("Host: localhost");
+  client.println("Accept: */*");
+  client.println("Content-Type: application/json");
+  //client.print("Content-Length: ");
+  //client.println(data.length());
+  client.println();
+  root.printTo(client);
+  client.print("\n");
+  //convert to char
+  char json_conv[100];
+  root.printTo((char*)json_conv, root.measureLength());
+  //convert to string
+  String json_str;
+  root.printTo(json_str);
+  Serial.println(json_str);
+  client.println(json_str);
 
   /*
   //this is a get method working
@@ -149,28 +130,89 @@ void loop() {
            "Connection: close\r\n\r\n");
   */
 
-  //post request
+  //POST REQUEST
   http.beginRequest();
   http.post(url, "application/json", json_str);//DATA MUST BE STRING, SEND DATA TO SERVER
-  http.get(unlock_url);//OBTAIN UNLOCK DATA FROM SERVER
   http.endRequest();
 
- unsigned long timeout = millis();
- while (client.available() == 0) {
-  if (millis() - timeout > 5000) {
-    Serial.println(">>> Client Timeout !");
-    client.println(">>> Client Timeout !");
-    client.stop();
-    return;
+  //GET REQUEST
+  http.beginRequest();
+  http.get(unlock_url);//OBTAIN UNLOCK DATA FROM SERVER
+  http.endRequest();
+ 
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 5000) {
+      Serial.println(">>> Client Timeout !");
+      client.println(">>> Client Timeout !");
+      client.stop();
+      return;
+    }
   }
-}
 
- // Read all the lines of the reply from server and print them to Serial
- while(client.available()){
-  String line = client.readStringUntil('\r');
-  Serial.print(line);
- } 
+  // Read all the lines of the reply from server and print them to Serial
+  while(client.available()){
+    String dato_bloqueo = client.readStringUntil('\r');//STRINGYFY DATA
+    estado = dato_bloqueo;
+    Serial.println(estado);
+  }
 
- Serial.println();
- Serial.println("closing connection");
+  //asign to switch int variable
+  if((llenado < 6.0) && ((estado.compareTo("F")==0)==0)){
+    status = 1;
+  }
+  if((estado.compareTo("N")==0)==0){
+    status = 2;
+  }
+
+  Serial.println(status);
+
+  switch(status){
+    case 0:
+    Serial.println("No response case 0");
+    break;
+    case 1:
+      Serial.println(estado);
+      Serial.println("FULL 1");
+      for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      servo.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(15);
+      }                     
+    break;
+    case 2:
+      Serial.println(estado);
+      Serial.println("NORMAL 2");
+      for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+      servo.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(15);                       // waits 15ms for the servo to reach the position
+      }                    
+    break;
+    default:
+    Serial.println("No response case default");
+  }
+
+  /*
+  //CONDICIONAL DE LLENADO
+  if((llenado < 6.0) && ((estado.compareTo("F")==0)==0)){
+    Serial.println("FULL");
+    for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    servo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);
+    }                     
+  }
+  else if((estado.compareTo("N")==0)==0){
+      Serial.println("NORMAL");
+      for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+      servo.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(15);                       // waits 15ms for the servo to reach the position
+    }
+  }
+  */ 
+      
+
+  Serial.println();
+  Serial.println("closing connection");
+
 }
