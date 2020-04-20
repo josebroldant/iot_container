@@ -35,7 +35,7 @@ int status=0;
 //WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 
 void setup(){
-  uint32_t currentFrequency;
+  Serial.println(timeClient.getFormattedTime());
   Serial.begin(9600);
   ina219.begin();
   pinMode(2, OUTPUT);
@@ -56,6 +56,7 @@ void setup(){
 String estado;
 WiFiClient client;
 HttpClient http = HttpClient(client, host, port);
+String tiempo = timeClient.getFormattedTime();
 
 void loop() {
   //medicion de distancia
@@ -90,6 +91,7 @@ void loop() {
   root["power"]  = power_mW;
   root["state"]  = estado;
   root["level"]  = llenado;
+  root["time"] = tiempo;
 
   root.printTo(Serial);
   Serial.print("\n");
@@ -158,10 +160,9 @@ void loop() {
   }
 
   //asign to switch int variable
-  if((llenado < 6.0) && ((estado.compareTo("F")==0)==0)){
+  if(((estado.compareTo("\nF")==0)) && (llenado < 6.0)){
     status = 1;
-  }
-  if((estado.compareTo("N")==0)==0){
+  }else if((estado.compareTo("\nN")==0)){
     status = 2;
   }
 
