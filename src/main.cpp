@@ -1,9 +1,6 @@
 #include <Arduino.h>
 #include <NTPClient.h>
-// change next line to use with another board/shield
 #include <ESP8266WiFi.h>
-//#include <WiFi.h> // for WiFi shield
-//#include <WiFi101.h> // for WiFi 101 shield or MKR1000
 #include <WiFiUdp.h>
 #include <Wire.h>
 #include <HCSR04.h>
@@ -16,8 +13,8 @@
 
 WiFiUDP ntpUDP;
 
-const char *ssid     = "Jose";//Usergioarboleda Jose
-const char *password = "noesfake";//ceskqyw2012 noesfake
+const char *ssid     = "Jose";
+const char *password = "noesfake";
 
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
@@ -98,22 +95,16 @@ void loop() {
 
   String json_test = "{\"voltage\":10,\"current\":\"1\",\"power\":\"6\",\"state\":\"f\",\"level\":\"6\"}";
 
-  //VERIFICACION DE LA CONEXION
+  //CONEXION AL SERVIDOR DE NODE JS
 
   client.connect(host, port);
   client.print("Succesfully connected to host");
 
-  // We now create a URI for the request
+  //URLS FOR THE REQUESTS
   String url = "http://localhost:8081/";
   String unlock_url = "http://localhost:8081/unlock";
 
   // Send request to the server:
-  client.println("POST / HTTP/1.1");
-  client.println("Host: localhost");
-  client.println("Accept: */*");
-  client.println("Content-Type: application/json");
-  //client.print("Content-Length: ");
-  //client.println(data.length());
   client.println();
   root.printTo(client);
   client.print("\n");
@@ -124,13 +115,6 @@ void loop() {
   String json_str;
   root.printTo(json_str);
   Serial.println(json_str);
-  client.println(json_str);
-
-  /*
-  //this is a get method working
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-           "Connection: close\r\n\r\n");
-  */
 
   //POST REQUEST
   http.beginRequest();
@@ -141,7 +125,8 @@ void loop() {
   http.beginRequest();
   http.get(unlock_url);//OBTAIN UNLOCK DATA FROM SERVER
   http.endRequest();
- 
+  
+  //CLIENT TRIES TO CONNECT AFTER 5 SECONDS
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
@@ -192,28 +177,5 @@ void loop() {
     default:
     Serial.println("No response case default");
   }
-
-  /*
-  //CONDICIONAL DE LLENADO
-  if((llenado < 6.0) && ((estado.compareTo("F")==0)==0)){
-    Serial.println("FULL");
-    for ( int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    servo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);
-    }                     
-  }
-  else if((estado.compareTo("N")==0)==0){
-      Serial.println("NORMAL");
-      for ( int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-      servo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(15);                       // waits 15ms for the servo to reach the position
-    }
-  }
-  */ 
-      
-
-  Serial.println();
-  Serial.println("closing connection");
 
 }
