@@ -10,30 +10,32 @@
 #include <ArduinoHttpClient.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <TimeLib.h>
+#include <string>  
 
-WiFiUDP ntpUDP;
-
+WiFiUDP ntpUDP;//WiFi variables
 const char *ssid     = "Jose";
 const char *password = "noesfake";
 
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+
+const long offset = -18000;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", offset, 1000);//UDP, SERVER NAME, TIME OFFSET gmt-5 of Bogotá, UPDATE INTERVAL
 
 UltraSonicDistanceSensor distanceSensor(13, 12);  // Initialize sensor that uses digital pins 13 and 12.
 
-Servo servo;
+Servo servo;//servo
 
-Adafruit_INA219 ina219;
+Adafruit_INA219 ina219;//power sensor
 
-const char *host = "192.168.43.25"; //ip del router 192.168.43.25 / 172.25.8.193
+//server data
+const char *host = "192.168.43.25";
 const uint16_t port = 8081;
 
 int status=0;
 
-//WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
-
 void setup(){
-  Serial.println(timeClient.getFormattedTime());
   Serial.begin(9600);
+  timeClient.begin();
   ina219.begin();
   pinMode(2, OUTPUT);
   servo.attach(2);
@@ -53,12 +55,22 @@ void setup(){
 String estado;
 WiFiClient client;
 HttpClient http = HttpClient(client, host, port);
-String tiempo = timeClient.getFormattedTime();
+//time vars
+int hours = timeClient.getHours(); 
+int minutes = timeClient.getMinutes();
+int seconds = timeClient.getSeconds();
 
 void loop() {
+  //get time 
+  timeClient.update();
+  //convert to string
+  String str_hours = String(hours);
+  String str_minutes = String(minutes);
+  String str_seconds = String(seconds);
+  //concat all
+  String tiempo = String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
   //medicion de distancia
-  Serial.print("Distancia: ");
-  Serial.print(distanceSensor.measureDistanceCm()); Serial.println(" cm");
+  Serial.print("Distancia: "); Serial.print(distanceSensor.measureDistanceCm()); Serial.println(" cm");
   //medicion de voltaje, corriente y potencia
   float shuntvoltage = 0;
   float busvoltage = 0;
@@ -77,6 +89,7 @@ void loop() {
   Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
   Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
   Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
+  Serial.print("Time:         "); Serial.print(tiempo);//bad time 1:28:26
   Serial.println("");
 
   double llenado = distanceSensor.measureDistanceCm();
