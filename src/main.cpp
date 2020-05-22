@@ -13,25 +13,36 @@
 #include <TimeLib.h>
 #include <string>  
 
-WiFiUDP ntpUDP;//WiFi variables
+WiFiUDP ntpUDP;
+//WiFi variables
 const char *ssid     = "Jose";
 const char *password = "noesfake";
 
+const long offset = -18000;//gmt -5 of Bogota (60 * 60 * -5)
+NTPClient timeClient(ntpUDP, "pool.ntp.org", offset, 1000);//UDP, SERVER NAME, TIME OFFSET, UPDATE INTERVAL
 
-const long offset = -18000;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", offset, 1000);//UDP, SERVER NAME, TIME OFFSET gmt-5 of Bogotá, UPDATE INTERVAL
+UltraSonicDistanceSensor distanceSensor(13, 12);//distance sensor object
 
-UltraSonicDistanceSensor distanceSensor(13, 12);  // Initialize sensor that uses digital pins 13 and 12.
+Servo servo;//servo object
 
-Servo servo;//servo
+Adafruit_INA219 ina219;//power sensor object
 
-Adafruit_INA219 ina219;//power sensor
-
-//server data
+//server variables
 const char *host = "192.168.43.25";
 const uint16_t port = 8081;
 
+//state variables
+String estado;
 int status=0;
+
+//Wifi client and http client objects
+WiFiClient client;
+HttpClient http = HttpClient(client, host, port);
+
+//time vars
+int hours = timeClient.getHours(); 
+int minutes = timeClient.getMinutes();
+int seconds = timeClient.getSeconds();
 
 void setup(){
   Serial.begin(9600);
@@ -51,14 +62,6 @@ void setup(){
   Serial.println(WiFi.localIP());
   delay(1000);
 }
-
-String estado;
-WiFiClient client;
-HttpClient http = HttpClient(client, host, port);
-//time vars
-int hours = timeClient.getHours(); 
-int minutes = timeClient.getMinutes();
-int seconds = timeClient.getSeconds();
 
 void loop() {
   //get time 
@@ -106,10 +109,9 @@ void loop() {
   root.printTo(Serial);
   Serial.print("\n");
 
-  String json_test = "{\"voltage\":10,\"current\":\"1\",\"power\":\"6\",\"state\":\"f\",\"level\":\"6\"}";
+  //String json_test = "{\"voltage\":10,\"current\":\"1\",\"power\":\"6\",\"state\":\"f\",\"level\":\"6\"}";
 
-  //CONEXION AL SERVIDOR DE NODE JS
-
+  //Connect to server
   client.connect(host, port);
   client.print("Succesfully connected to host");
 
@@ -138,7 +140,7 @@ void loop() {
   http.beginRequest();
   http.get(unlock_url);//OBTAIN UNLOCK DATA FROM SERVER
   http.endRequest();
-  
+
   //CLIENT TRIES TO CONNECT AFTER 5 SECONDS
   unsigned long timeout = millis();
   while (client.available() == 0) {
@@ -166,6 +168,7 @@ void loop() {
 
   Serial.println(status);
 
+  //cases in order to rotate servo to lock or unlock
   switch(status){
     case 0:
     Serial.println("No response case 0");
