@@ -1,17 +1,17 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <Servo.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
 #include <NTPClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <Wire.h>
 #include <HCSR04.h>
-#include <Servo.h>
 #include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
 #include <ArduinoHttpClient.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <TimeLib.h>
-#include <string>  
+#include <TimeLib.h>  
 
 WiFiUDP ntpUDP;
 //WiFi variables
@@ -19,7 +19,7 @@ const char *ssid     = "Jose";
 const char *password = "noesfake";
 
 const long offset = -18000;//gmt -5 of Bogota (60 * 60 * -5)
-NTPClient timeClient(ntpUDP, "pool.ntp.org", offset, 1000);//UDP, SERVER NAME, TIME OFFSET, UPDATE INTERVAL
+NTPClient timeClient(ntpUDP, "pool.ntp.org", offset, 1000);//UDP, SERVER NAME, TIME OFFSET, UPDATE INTERVAL IN ms
 
 UltraSonicDistanceSensor distanceSensor(13, 12);//distance sensor object
 
@@ -73,6 +73,7 @@ void loop() {
   //concat all
   String tiempo = String(timeClient.getHours()) + ":" + String(timeClient.getMinutes()) + ":" + String(timeClient.getSeconds());
   //medicion de distancia
+  String newTiempo = timeClient.getFormattedTime();
   Serial.print("Distancia: "); Serial.print(distanceSensor.measureDistanceCm()); Serial.println(" cm");
   //medicion de voltaje, corriente y potencia
   float shuntvoltage = 0;
@@ -104,7 +105,7 @@ void loop() {
   root["power"]  = power_mW;
   root["state"]  = estado;
   root["level"]  = llenado;
-  root["time"] = tiempo;
+  root["time"] = newTiempo;
 
   root.printTo(Serial);
   Serial.print("\n");
